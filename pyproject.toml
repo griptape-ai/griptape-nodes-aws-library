@@ -1,9 +1,9 @@
 [project]
-name = "example_nodes_template"
+name = "griptape-nodes-aws-library"
 version = "0.1.0"
-description = "Template for Users to create Custom Libraries and Nodes"
+description = "AWS CLI nodes for Griptape Nodes Engine"
 authors = [
-    {name = "Your Name",email = "you@example.com"}
+    {name = "Griptape", email = "hello@griptape.ai"}
 ]
 readme = "README.md"
 requires-python = "~=3.12"

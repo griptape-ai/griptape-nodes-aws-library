@@ -1,0 +1,64 @@
+{
+    "name": "AWS Library",
+    "library_schema_version": "0.6.0",
+    "settings": [
+        {
+            "description": "AWS credentials required by nodes in this library",
+            "category": "app_events.on_app_initialization_complete",
+            "contents": {
+                "secrets_to_register": {
+                    "AWS_ACCESS_KEY_ID": "",
+                    "AWS_SECRET_ACCESS_KEY": "",
+                    "AWS_DEFAULT_REGION": "",
+                    "AWS_SESSION_TOKEN": ""
+                }
+            }
+        }
+    ],
+    "metadata": {
+        "author": "Griptape",
+        "description": "AWS CLI nodes for the Griptape Nodes Engine",
+        "library_version": "0.1.0",
+        "engine_version": "0.73.0",
+        "tags": [
+            "AWS",
+            "S3",
+            "Cloud"
+        ],
+        "dependencies": {
+            "pip_dependencies": [
+                "awscli"
+            ]
+        }
+    },
+    "categories": [
+        {
+            "S3": {
+                "color": "border-orange-500",
+                "title": "S3",
+                "description": "Amazon S3 file storage nodes",
+                "icon": "Cloud"
+            }
+        }
+    ],
+    "nodes": [
+        {
+            "class_name": "S3DownloadFile",
+            "file_path": "s3_download_file.py",
+            "metadata": {
+                "category": "S3",
+                "description": "Download a file from S3 to local storage",
+                "display_name": "S3 Download File"
+            }
+        },
+        {
+            "class_name": "S3UploadFile",
+            "file_path": "s3_upload_file.py",
+            "metadata": {
+                "category": "S3",
+                "description": "Upload a file from local storage to S3",
+                "display_name": "S3 Upload File"
+            }
+        }
+    ]
+}
