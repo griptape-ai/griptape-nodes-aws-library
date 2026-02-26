@@ -1,9 +1,15 @@
-import os
-import subprocess
 from typing import Any
+from urllib.parse import urlparse
+
+import boto3  # pyright: ignore[reportMissingImports]
 
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import ControlNode
+from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
+
+AWS_ACCESS_KEY_ID_ENV_VAR = "AWS_ACCESS_KEY_ID"
+AWS_SECRET_ACCESS_KEY_ENV_VAR = "AWS_SECRET_ACCESS_KEY"  # noqa: S105
+AWS_DEFAULT_REGION_ENV_VAR = "AWS_DEFAULT_REGION"
 
 
 class S3UploadFile(ControlNode):
@@ -45,13 +51,29 @@ class S3UploadFile(ControlNode):
             )
         )
 
-    def validate_before_node_run(self) -> list[Exception] | None:
+    def start_session(self) -> boto3.Session:
+        """Creates a boto3 session using AWS credentials from the secrets manager."""
+        aws_access_key_id = GriptapeNodes.SecretsManager().get_secret(AWS_ACCESS_KEY_ID_ENV_VAR)
+        aws_secret_access_key = GriptapeNodes.SecretsManager().get_secret(AWS_SECRET_ACCESS_KEY_ENV_VAR)
+        aws_default_region = GriptapeNodes.SecretsManager().get_secret(AWS_DEFAULT_REGION_ENV_VAR)
+
+        try:
+            session = boto3.Session(
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key,
+                region_name=aws_default_region,
+            )
+        except Exception as e:
+            msg = f"Failed to create AWS session for node {self.name}. Please check your AWS credentials and region."
+            raise RuntimeError(msg) from e
+        return session
+
+    def validate_before_workflow_run(self) -> list[Exception] | None:
         exceptions = []
-        for key in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"):
-            try:
-                self.get_config_value(service="AWS", value=key)
-            except Exception as e:
-                exceptions.append(e)
+        for key in (AWS_ACCESS_KEY_ID_ENV_VAR, AWS_SECRET_ACCESS_KEY_ENV_VAR, AWS_DEFAULT_REGION_ENV_VAR):
+            value = GriptapeNodes.SecretsManager().get_secret(key)
+            if not value:
+                exceptions.append(ValueError(f"{self.name}: AWS credential '{key}' is not configured."))
         return exceptions if exceptions else None
 
     def process(self) -> None:
@@ -63,22 +85,12 @@ class S3UploadFile(ControlNode):
         if not s3_uri or not s3_uri.startswith("s3://"):
             raise ValueError(f"{self.name}: s3_uri must be a valid S3 URI starting with 's3://'")
 
-        env = os.environ.copy()
-        for key in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION", "AWS_SESSION_TOKEN"):
-            try:
-                value = self.get_config_value(service="AWS", value=key)
-                if value:
-                    env[key] = value
-            except Exception:
-                pass
+        parsed = urlparse(s3_uri)
+        bucket = parsed.netloc
+        key = parsed.path.lstrip("/")
 
-        result = subprocess.run(
-            ["aws", "s3", "cp", local_path, s3_uri],
-            capture_output=True,
-            text=True,
-            env=env,
-        )
-        if result.returncode != 0:
-            raise ValueError(f"{self.name}: AWS CLI error: {result.stderr.strip()}")
+        session = self.start_session()
+        s3_client = session.client("s3")
+        s3_client.upload_file(local_path, bucket, key)
 
         self.parameter_output_values["uploaded_uri"] = s3_uri

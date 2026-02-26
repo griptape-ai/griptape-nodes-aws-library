@@ -9,17 +9,16 @@
                 "secrets_to_register": {
                     "AWS_ACCESS_KEY_ID": "",
                     "AWS_SECRET_ACCESS_KEY": "",
-                    "AWS_DEFAULT_REGION": "",
-                    "AWS_SESSION_TOKEN": ""
+                    "AWS_DEFAULT_REGION": ""
                 }
             }
         }
     ],
     "metadata": {
         "author": "Griptape",
-        "description": "AWS CLI nodes for the Griptape Nodes Engine",
+        "description": "AWS nodes for the Griptape Nodes Engine",
         "library_version": "0.1.0",
-        "engine_version": "0.73.0",
+        "engine_version": "0.75.2",
         "tags": [
             "AWS",
             "S3",
@@ -27,7 +26,7 @@
         ],
         "dependencies": {
             "pip_dependencies": [
-                "awscli"
+                "boto3"
             ]
         }
     },
