@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import ControlNode
+from griptape_nodes.files.file import File
 
 from griptape_nodes_aws_library.aws.aws_session import start_session, validate_aws_credentials
 
@@ -64,6 +65,8 @@ class S3DownloadFile(ControlNode):
 
         session = start_session(self.name)
         s3_client = session.client("s3")
-        s3_client.download_file(bucket, key, local_path)
+        content = s3_client.get_object(Bucket=bucket, Key=key)["Body"].read()
 
-        self.parameter_output_values["downloaded_path"] = local_path
+        written_path = File(local_path).write_bytes(content)
+
+        self.parameter_output_values["downloaded_path"] = written_path

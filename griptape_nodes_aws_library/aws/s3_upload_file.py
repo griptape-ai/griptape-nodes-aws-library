@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 from griptape_nodes.exe_types.core_types import Parameter, ParameterMode
 from griptape_nodes.exe_types.node_types import ControlNode
+from griptape_nodes.files.file import File
 
 from griptape_nodes_aws_library.aws.aws_session import start_session, validate_aws_credentials
 
@@ -62,8 +63,10 @@ class S3UploadFile(ControlNode):
         bucket = parsed.netloc
         key = parsed.path.lstrip("/")
 
+        content = File(local_path).read_bytes()
+
         session = start_session(self.name)
         s3_client = session.client("s3")
-        s3_client.upload_file(local_path, bucket, key)
+        s3_client.put_object(Bucket=bucket, Key=key, Body=content)
 
         self.parameter_output_values["uploaded_uri"] = s3_uri
