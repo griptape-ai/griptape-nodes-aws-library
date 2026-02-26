@@ -43,7 +43,7 @@
     "nodes": [
         {
             "class_name": "S3DownloadFile",
-            "file_path": "s3_download_file.py",
+            "file_path": "griptape_nodes_aws_library/aws/s3_download_file.py",
             "metadata": {
                 "category": "S3",
                 "description": "Download a file from S3 to local storage",
@@ -52,7 +52,7 @@
         },
         {
             "class_name": "S3UploadFile",
-            "file_path": "s3_upload_file.py",
+            "file_path": "griptape_nodes_aws_library/aws/s3_upload_file.py",
             "metadata": {
                 "category": "S3",
                 "description": "Upload a file from local storage to S3",
