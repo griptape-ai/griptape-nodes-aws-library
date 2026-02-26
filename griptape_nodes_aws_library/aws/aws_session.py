@@ -5,6 +5,7 @@ from griptape_nodes.retained_mode.griptape_nodes import GriptapeNodes
 AWS_ACCESS_KEY_ID_ENV_VAR = "AWS_ACCESS_KEY_ID"
 AWS_SECRET_ACCESS_KEY_ENV_VAR = "AWS_SECRET_ACCESS_KEY"  # noqa: S105
 AWS_DEFAULT_REGION_ENV_VAR = "AWS_DEFAULT_REGION"
+AWS_SESSION_TOKEN_ENV_VAR = "AWS_SESSION_TOKEN"  # noqa: S105
 
 
 def start_session(node_name: str) -> boto3.Session:
@@ -12,12 +13,14 @@ def start_session(node_name: str) -> boto3.Session:
     aws_access_key_id = GriptapeNodes.SecretsManager().get_secret(AWS_ACCESS_KEY_ID_ENV_VAR)
     aws_secret_access_key = GriptapeNodes.SecretsManager().get_secret(AWS_SECRET_ACCESS_KEY_ENV_VAR)
     aws_default_region = GriptapeNodes.SecretsManager().get_secret(AWS_DEFAULT_REGION_ENV_VAR)
+    aws_session_token = GriptapeNodes.SecretsManager().get_secret(AWS_SESSION_TOKEN_ENV_VAR) or None
 
     try:
         session = boto3.Session(
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             region_name=aws_default_region,
+            aws_session_token=aws_session_token,
         )
     except Exception as e:
         msg = f"Failed to create AWS session for node {node_name}. Please check your AWS credentials and region."
