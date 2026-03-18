@@ -21,11 +21,11 @@ class S3UploadFile(ControlNode):
         self.add_parameter(
             Parameter(
                 name="local_path",
-                input_types=["str"],
+                input_types=["str", "ImageArtifact", "ImageUrlArtifact", "VideoUrlArtifact", "AudioArtifact"],
                 type="str",
                 default_value="",
                 allowed_modes={ParameterMode.INPUT, ParameterMode.PROPERTY},
-                tooltip="Local path of the file to upload",
+                tooltip="Local path of the file to upload, or an image/video/audio artifact",
             )
         )
         self.add_parameter(
@@ -53,6 +53,9 @@ class S3UploadFile(ControlNode):
     def process(self) -> None:
         local_path = self.parameter_values["local_path"]
         s3_uri = self.parameter_values["s3_uri"]
+
+        if hasattr(local_path, "value"):
+            local_path = local_path.value
 
         if not local_path:
             raise ValueError(f"{self.name}: local_path is required")

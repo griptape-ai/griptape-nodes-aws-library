@@ -69,4 +69,4 @@ class S3DownloadFile(ControlNode):
 
         written_path = File(local_path).write_bytes(content)
 
-        self.parameter_output_values["downloaded_path"] = written_path
+        self.parameter_output_values["downloaded_path"] = str(written_path)
