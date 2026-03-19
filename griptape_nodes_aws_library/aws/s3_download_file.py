@@ -1,3 +1,4 @@
+import urllib.request
 from typing import Any
 from urllib.parse import urlparse
 
@@ -25,7 +26,7 @@ class S3DownloadFile(ControlNode):
                 type="str",
                 default_value="",
                 allowed_modes={ParameterMode.INPUT, ParameterMode.PROPERTY},
-                tooltip="S3 URI of the file to download (e.g. s3://mybucket/myfile.txt)",
+                tooltip="S3 URI (e.g. s3://mybucket/myfile.txt) or presigned HTTPS URL",
             )
         )
         self.add_parameter(
@@ -48,24 +49,32 @@ class S3DownloadFile(ControlNode):
         )
 
     def validate_before_workflow_run(self) -> list[Exception] | None:
+        s3_uri = self.parameter_values.get("s3_uri", "")
+        if s3_uri and s3_uri.startswith("https://"):
+            return None
         return validate_aws_credentials(self.name)
 
     def process(self) -> None:
         s3_uri = self.parameter_values["s3_uri"]
         local_path = self.parameter_values["local_path"]
 
-        if not s3_uri or not s3_uri.startswith("s3://"):
-            raise ValueError(f"{self.name}: s3_uri must be a valid S3 URI starting with 's3://'")
+        if not s3_uri:
+            raise ValueError(f"{self.name}: s3_uri is required")
         if not local_path:
             raise ValueError(f"{self.name}: local_path is required")
 
-        parsed = urlparse(s3_uri)
-        bucket = parsed.netloc
-        key = parsed.path.lstrip("/")
-
-        session = start_session(self.name)
-        s3_client = session.client("s3")
-        content = s3_client.get_object(Bucket=bucket, Key=key)["Body"].read()
+        if s3_uri.startswith("https://"):
+            with urllib.request.urlopen(s3_uri) as response:  # noqa: S310
+                content = response.read()
+        elif s3_uri.startswith("s3://"):
+            parsed = urlparse(s3_uri)
+            bucket = parsed.netloc
+            key = parsed.path.lstrip("/")
+            session = start_session(self.name)
+            s3_client = session.client("s3")
+            content = s3_client.get_object(Bucket=bucket, Key=key)["Body"].read()
+        else:
+            raise ValueError(f"{self.name}: s3_uri must be an S3 URI (s3://) or a presigned HTTPS URL (https://)")
 
         written_path = File(local_path).write_bytes(content)
 
