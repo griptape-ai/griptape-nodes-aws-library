@@ -10,4 +10,4 @@ the `library_version` in `griptape_nodes_library.json`.
 
 <!-- Entries go in changelog.d/, one file each. See changelog.d/README.md. -->
 
-[Unreleased]: https://github.com/griptape-ai/griptape-nodes-aws-library/compare/2d38b252b4272695c3e14571ca79c04ec088342e...HEAD
+[Unreleased]: https://github.com/griptape-ai/griptape-nodes-aws-library/compare/c656181a9143d92559183abf0dfddfa7f91560ca...HEAD
