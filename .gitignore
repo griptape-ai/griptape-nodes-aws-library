@@ -2,3 +2,5 @@
 .venv
 griptape_nodes_aws_library/__pycache__/
 griptape_nodes_aws_library/aws/__pycache__/
+__pycache__/
+.pytest_cache/
